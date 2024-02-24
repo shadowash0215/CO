@@ -25,6 +25,6 @@ module MUX4to1(
     output wire [3:0] LED
     );
     
-    assign LED = (SW[15:14] == 0) ? SW[3:0] : (SW[15:14] == 1) ? SW[7:4] : (SW[15:14] == 2) ? SW[11:8] : 0;
+    assign LED = SW[14] ? (SW[15] ? 0 : SW[7:4]) : (SW[15] ? SW[11:8] : SW[3:0]);
     
 endmodule
