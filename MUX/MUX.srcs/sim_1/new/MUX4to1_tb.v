@@ -26,6 +26,11 @@ module MUX4to1_tb();
     reg [15:0] SW;
     //output
     wire [3:0] LED;
+
+    MUX4to1 my_MUX4to1(
+        .SW(SW),
+        .LED(LED)
+    );
   
     initial begin
     SW = 0;
@@ -44,11 +49,8 @@ module MUX4to1_tb();
     SW[15:14] = 2'b11;
     #50;
     SW = 0;
+    #10
+    $stop();
     end
-    
-    MUX4to1 my_MUX4to1(
-        .SW(SW),
-        .LED(LED)
-    );
     
 endmodule
