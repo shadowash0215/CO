@@ -24,14 +24,12 @@ module TruthEvaluator_tb();
     reg clk;
     reg rst;
     reg truth_detection;
-    // wire [1:0] curr_state;
     wire trust_decision;
 
     TruthEvaluator TruthEvaluator_u (
         .clk(clk),
         .rst(rst),
         .truth_detection(truth_detection),
-        // .curr_state(curr_state),
         .trust_decision(trust_decision)
     );
 

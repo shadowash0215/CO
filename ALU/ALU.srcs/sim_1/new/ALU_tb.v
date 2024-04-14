@@ -79,6 +79,14 @@ module ALU_tb;
         A = 32'h80000000;
         B = 32'h00000001;
         #100;
+        // c. positive - positive
+        A = 32'h00000001;
+        B = 32'h00000002;
+        #100;
+        // d. negative - negative
+        A = 32'hffffffff;
+        B = 32'hfffffffe;
+        #100;
         // 3. left shift overflow
         ALU_operation = 4'b0010;
         A = 32'h00000001;
@@ -92,12 +100,13 @@ module ALU_tb;
         ALU_operation = 4'b0111;
         #100;
         // 5. difference between signed and unsigned
-        A = 32'hffffffff;
-        B = 32'hfffffffe;
+        A = 32'hfffffffe;
+        B = 32'h00000001;
         ALU_operation = 4'b0011;
         #100;
         ALU_operation = 4'b0100;
         #100;
+        $stop();
     end
 
 endmodule

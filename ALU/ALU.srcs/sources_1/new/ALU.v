@@ -39,7 +39,7 @@ module ALU(
             4'b0100: res = ($unsigned(A) < $unsigned(B));
             4'b0101: res = A ^ B;
             4'b0110: res = A >> B[4:0];
-            4'b0111: res = A >>> B[4:0];
+            4'b0111: res = $signed(A) >>> B[4:0];
             4'b1000: res = A | B;
             4'b1001: res = A & B;
             default: res = 32'b0;

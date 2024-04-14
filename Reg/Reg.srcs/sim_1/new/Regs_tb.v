@@ -29,7 +29,6 @@ module Regs_tb;
     reg RegWrite; 
     wire [31:0] Rs1_data; 
     wire [31:0] Rs2_data;
-    // wire [31:0] Reg01;
     Regs Regs_U(
         .clk(clk),
         .rst(rst),
@@ -39,8 +38,7 @@ module Regs_tb;
         .Wt_data(Wt_data),
         .RegWrite(RegWrite),
         .Rs1_data(Rs1_data),
-        .Rs2_data(Rs2_data),
-        .Reg01(Reg01)
+        .Rs2_data(Rs2_data)
     );
 
     always #10 clk = ~clk;
@@ -59,65 +57,68 @@ module Regs_tb;
         RegWrite = 1;
         Wt_addr = 5'b00101;
         Wt_data = 32'ha5a5a5a5;
-        #50
+        #100
         Wt_addr = 5'b01010;
         Wt_data = 32'h5a5a5a5a;
-        #50
+        #100
         RegWrite = 0;
         Rs1_addr = 5'b00101;
         Rs2_addr = 5'b01010;
         #100 
         // corner case
         // 1. Asynchronous Reset
-        #20
         rst = 1;
         RegWrite = 1;
         Wt_addr = 5'b00001;
         Wt_data = 32'hbabecafe;
-        #40
+        #100
         rst = 0;
-        #30
+        #100
         RegWrite = 0;
         Rs1_addr = 5'b00001;
-        #10
+        #100
         rst = 1;
-        #20
+        #100
         rst = 0;
         Wt_addr = 0;
         Wt_data = 0;
         RegWrite = 1;
-        #10
+        #100
         // 2. Write while r/w signal is low
         RegWrite = 0;
         Wt_addr = 5'b00001;
         Wt_data = 32'hdeadbeef;
-        #30
+        #100
         RegWrite = 1;
-        #20
+        #100
         rst = 1;
         Wt_addr = 0;
         Wt_data = 0;
-        #10
+        #100
         rst = 0;
         RegWrite = 0;
-        #10
+        #100
         // 3. Read while r/w signal is high
         RegWrite = 1;
         Wt_addr = 5'b00001;
         Wt_data = 32'hdeadbeef;
-        #30
+        #100
         Wt_addr = 0;
         Wt_data = 0;
         Rs1_addr = 5'b00001;
-        #30
+        #100
         RegWrite = 0;
-        #20
+        #100
         rst = 1;
         Rs1_addr = 0;
-        #10
+        #100
         rst = 0;
         RegWrite = 1;
-        #10
+        #100
+        // 4. Write address is 0
+        Wt_addr = 5'b00000;
+        Wt_data = 32'hdeadbeef;
+        #100
         $stop();
     end
 

@@ -24,7 +24,6 @@ module TruthEvaluator(
     input clk,
     input rst,
     input truth_detection,
-    // output reg [1:0] curr_state, 
     output trust_decision
     );
 
