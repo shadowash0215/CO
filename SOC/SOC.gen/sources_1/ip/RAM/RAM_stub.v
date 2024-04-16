@@ -2,9 +2,10 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (win64) Build 4029153 Fri Oct 13 20:14:34 MDT 2023
-// Date        : Wed Mar 13 14:52:25 2024
+// Date        : Wed Mar 13 14:52:24 2024
 // Host        : Minxuan-MeiLenovo running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub e:/CO/SOC/SOC.gen/sources_1/ip/RAM/RAM_stub.v
+// Command     : write_verilog -force -mode synth_stub -rename_top RAM -prefix
+//               RAM_ RAM_stub.v
 // Design      : RAM
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a100tcsg324-1

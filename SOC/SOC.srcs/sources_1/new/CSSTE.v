@@ -115,7 +115,7 @@ module CSSTE(
     wire [31:0] addr_out;
     wire [31:0] PC_out;
     wire        MemRW;
-    SCPU U1(
+    scpu U1(
         .clk(clk_cpu),
         .rst(rst),
         .Data_in(data_in),
