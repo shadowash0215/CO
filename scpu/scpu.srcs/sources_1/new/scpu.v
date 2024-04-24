@@ -19,6 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+`include "scpu_header.vh"
 
 module scpu(
     input clk,
@@ -26,6 +27,9 @@ module scpu(
     input MIO_ready,
     input [31:0] inst_in,
     input [31:0] Data_in,
+
+    `RegFile_Regs_Outputs
+    output reg [3:0] RAM_mask,
     output reg [31:0] Data_out,
     output reg [31:0] PC_out,
     output reg [31:0] Addr_out,
@@ -33,25 +37,33 @@ module scpu(
     output reg CPU_MIO
     );
 
-wire [1:0] ImmSel;
+wire [2:0] ImmSel;
+wire ALUSrc_A;
 wire ALUSrc_B;
-wire [1:0] MemtoReg;
-wire Jump;
-wire Branch;
+wire [2:0] MemtoReg;
+wire [1:0] Jump;
+wire [3:0] Branch;
 wire RegWrite;
 wire MemRW_temp;
 wire CPU_MIO_temp;
+wire signal;
+wire [1:0] width;
+wire [3:0] mask_temp;
 wire [3:0] ALU_Control;
 wire [31:0] Data_out_temp;
 wire [31:0] Addr_out_temp;
 wire [31:0] PC_out_temp;
 
-SCPU_ctrl U1(inst_in[6:2], inst_in[14:12], inst_in[30], MIO_ready, ImmSel, ALUSrc_B, MemtoReg, Jump, Branch, RegWrite, MemRW_temp, ALU_Control, CPU_MIO_temp);
+SCPU_ctrl U1(.OPcode(inst_in[6:2]), .Fun3(inst_in[14:12]), .Fun7(inst_in[30]), .MIO_ready(MIO_ready), .ImmSel(ImmSel), .ALUSrc_A(ALUSrc_A), .ALUSrc_B(ALUSrc_B), .MemtoReg(MemtoReg), .Jump(Jump), .Branch(Branch), .RegWrite(RegWrite), .MemRW(MemRW_temp), .ALU_Control(ALU_Control), .CPU_MIO(CPU_MIO_temp), .signal(signal), .width(width));
 
-datapath U2(clk, rst, inst_in, Data_in, ALU_Control, ImmSel, MemtoReg, Branch, Jump, ALUSrc_B, RegWrite, Data_out_temp, Addr_out_temp, PC_out_temp);
+datapath U2(.clk(clk), .rst(rst), .inst_field(inst_in), .data_in(Data_in), .ALU_Control(ALU_Control), 
+
+`RegFile_Regs_Arguments
+.ImmSel(ImmSel), .MemtoReg(MemtoReg), .Branch(Branch), .Jump(Jump), .ALUSrc_A(ALUSrc_A), .ALUSrc_B(ALUSrc_B), .RegWrite(RegWrite), .signal(signal), .width(width), .RAM_mask(mask_temp), .Data_out(Data_out_temp), .ALU_out(Addr_out_temp), .PC_out(PC_out_temp));
 
 always @(*) begin
     MemRW = MemRW_temp;
+    RAM_mask = mask_temp;
     CPU_MIO = CPU_MIO_temp;
     Data_out = Data_out_temp;
     Addr_out = Addr_out_temp;

@@ -19,21 +19,20 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+`include "scpu_header.vh"
 
 module CSSTE(
     input         clk_100mhz,
     input         RSTN,
     input  [3:0]  BTN_y,
     input  [15:0] SW,
-    output [3:0]  Blue,
-    output [3:0]  Green,
-    output [3:0]  Red,
-    output        HSYNC,
-    output        VSYNC,
+    output wire tx,
     output [15:0] LED_out,
     output [7:0] AN,
     output [7:0] segment
     );
+
+    `RegFile_Regs_Declaration
 
     wire [ 3:0] BTN;
     wire [15:0] switch;
@@ -111,6 +110,7 @@ module CSSTE(
         .Peripheral_in(counter_val)
     );
 
+    wire [ 3:0] RAM_mask;
     wire [31:0] data_out;
     wire [31:0] addr_out;
     wire [31:0] PC_out;
@@ -121,6 +121,9 @@ module CSSTE(
         .Data_in(data_in),
         .inst_in(inst_in),
         .MemRW(MemRW),
+
+        `RegFile_Regs_Arguments
+        .RAM_mask(RAM_mask),
         .Addr_out(addr_out),
         .Data_out(data_out),
         .PC_out(PC_out)
@@ -135,7 +138,7 @@ module CSSTE(
     wire [31:0] ram_data_out;
     RAM U3(
         .clka(~clk_100mhz),
-        .wea(data_ram_we),
+        .wea({4{data_ram_we}} & RAM_mask),
         .addra(ram_addr),
         .dina(ram_data_in),
         .douta(ram_data_out)
@@ -184,22 +187,21 @@ module CSSTE(
         .LED_out(LED_out)
     );
 
-    VGA U11(
-        .clk_25m(clk_div[1]),
-        .clk_100m(clk_100mhz),
-        .rst(rst),
+    UART U11(
+        .clk(clk_100mhz),
+        .rst(SW[0]),
+        .tx(tx),
+
+        `URAT_RegFile_Arguments
         .pc(PC_out),
         .inst(inst_in),
         .alu_res(addr_out),
         .mem_wen(MemRW),
+        .mem_ren(~MemRW),
         .dmem_o_data(ram_data_out),
-        .dmem_i_data(ram_data_in),
-        .dmem_addr(addr_out),
-        .hs(HSYNC),
-        .vs(VSYNC),
-        .vga_r(Red),
-        .vga_g(Green),
-        .vga_b(Blue)
+        .dmem_i_data(data_in),
+        .dmem_addr(addr_out)
     );
+
 endmodule
 

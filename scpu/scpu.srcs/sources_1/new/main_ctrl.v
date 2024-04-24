@@ -19,18 +19,22 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+`include "scpu_header.vh"
 
 module main_ctrl(
     input [4:0]       OPcode,
     input [2:0]       Fun3,
     input             Fun7,
-    output reg [1:0]  ImmSel,
+    output reg [2:0]  ImmSel,
+    output reg        ALUSrc_A,   
     output reg        ALUSrc_B,
-    output reg [1:0]  MemtoReg,
-    output reg        Jump,
-    output reg        Branch,
+    output reg [2:0]  MemtoReg,
+    output reg [1:0]  Jump, // 10 for jal, 11 for jalr, 0x for others
+    output reg [4:0]  Branch, // 0000 for no branch, 0001 for beq, 0010 for bne, 0100 for blt, bltu, 1000 for bge, bgeu
+    output reg        signal, // 1 for unsigned, 0 for signed
+    output reg [1:0]  width,
     output reg        RegWrite,
-    output reg        MemRW,
+    output reg        MemRW, // 0 for read, 1 for write
     output reg [1:0]  ALU_op,
     output reg        CPU_MIO
     );
@@ -38,82 +42,187 @@ module main_ctrl(
 
 always @(*) begin
     case(OPcode)
-    5'b01100: begin // R-type
-        ImmSel = 2'b00;
+    // R-type
+    `OPCODE_ALU: begin // add, sub, and, or, xor, sll, srl, sra, slt, sltu
+        ImmSel = 3'b000;
+        ALUSrc_A = 0;
         ALUSrc_B = 0;
-        MemtoReg = 2'b00;
-        Jump = 0;
-        Branch = 0;
+        MemtoReg = 3'b000;
+        Jump = 2'b00;
+        Branch = 4'b0000;
         RegWrite = 1;
         MemRW = 0;
         ALU_op = 2'b10;
         CPU_MIO = 0;
+        if (Fun3 == 3'b011) begin
+            signal = 1;
+        end else begin 
+            signal = 0;
+        end
+        width = 2'b00;
     end
-    5'b00100: begin // like addi
-        ImmSel = 2'b00;
+    // I-type
+    `OPCODE_ALU_IMM: begin // addi, andi, ori, xori, slti, sltiu, slli, srli, srai
+        ImmSel = 3'b000;
+        ALUSrc_A = 0;
         ALUSrc_B = 1;
-        MemtoReg = 2'b00;
-        Jump = 0;
-        Branch = 0;
+        MemtoReg = 3'b000;
+        Jump = 2'b00;
+        Branch = 4'b0000;
         RegWrite = 1;
         MemRW = 0;
         ALU_op = 2'b11;
         CPU_MIO = 0;
+        if (Fun3 == 3'b011) begin
+            signal = 1;
+        end else begin 
+            signal = 0;
+        end
+        width = 2'b00;
     end
-    5'b00000: begin // lw
-        ImmSel = 2'b00;
+    `OPCODE_LOAD: begin // lb, lh, lw, lbu, lhu
+        ImmSel = 3'b000;
+        ALUSrc_A = 0;
         ALUSrc_B = 1;
-        MemtoReg = 2'b01;
-        Jump = 0;
-        Branch = 0;
+        MemtoReg = 3'b001;
+        Jump = 2'b00;
+        Branch = 4'b0000;
         RegWrite = 1;
         MemRW = 0;
         ALU_op = 2'b00;
         CPU_MIO = 1;
+        signal = Fun3[2];
+        width = Fun3[1:0];
     end
-    5'b01000: begin // sw
-        ImmSel = 2'b01;
+    `OPCODE_JALR: begin // jalr
+        ImmSel = 3'b000;
+        ALUSrc_A = 0;
         ALUSrc_B = 1;
-        MemtoReg = 2'b00;
-        Jump = 0;
-        Branch = 0;
+        MemtoReg = 3'b010;
+        Jump = 2'b11;
+        Branch = 4'b0000;
+        RegWrite = 1;
+        MemRW = 0;
+        ALU_op = 2'b00;
+        CPU_MIO = 0;
+        signal = 0;
+        width = 2'b00;
+    end
+    // S-type
+    `OPCODE_STORE: begin // sb, sh, sw
+        ImmSel = 3'b001;
+        ALUSrc_A = 0;
+        ALUSrc_B = 1;
+        MemtoReg = 3'b000;
+        Jump = 2'b00;
+        Branch = 4'b0000;
         RegWrite = 0;
         MemRW = 1;
         ALU_op = 2'b00;
         CPU_MIO = 1;
+        signal = 0;
+        width = Fun3[1:0];
     end
-    5'b11000: begin // beq
-        ImmSel = 2'b10;
+    // SB-type
+    `OPCODE_BRANCH: begin // beq, bne, blt, bge, bltu, bgeu
+        ImmSel = 3'b010;
+        ALUSrc_A = 0;
         ALUSrc_B = 0;
-        MemtoReg = 2'b00;
-        Jump = 0;
-        Branch = 1;
+        MemtoReg = 3'b000;
+        Jump = 2'b00;
+        case (Fun3)
+        3'b000: begin
+            Branch = 4'b0001; // beq
+            signal = 0;
+        end
+        3'b001: begin 
+            Branch = 4'b0010; // bne
+            signal = 0;
+        end
+        3'b100: begin 
+            Branch = 4'b0100; // blt
+            signal = 0;
+        end
+        3'b101: begin 
+            Branch = 4'b1000; // bge
+            signal = 0;
+        end
+        3'b110: begin 
+            Branch = 4'b0100; // bltu
+            signal = 1;
+        end
+        3'b111: begin 
+            Branch = 4'b1000; // bgeu
+            signal = 1;
+        end
+        default: begin 
+            Branch = 4'b0000;
+            signal = 0;
+        end
+        endcase
         RegWrite = 0;
         MemRW = 0;
         ALU_op = 2'b01;
         CPU_MIO = 0;
+        width = 2'b00;
     end
-    5'b11011: begin // jal
-        ImmSel = 2'b11;
+    // UJ-type
+    `OPCODE_JAL: begin // jal
+        ImmSel = 3'b011;
+        ALUSrc_A = 0;
         ALUSrc_B = 0;
-        MemtoReg = 2'b00;
-        Jump = 1;
-        Branch = 0;
+        MemtoReg = 3'b000;
+        Jump = 2'b10;
+        Branch = 4'b0000;
         RegWrite = 0;
         MemRW = 0;
         ALU_op = 2'b00;
         CPU_MIO = 0;
+        signal = 0;
+        width = 2'b00;
+    end
+    // U-type
+    `OPCODE_LUI: begin // lui
+        ImmSel = 3'b100;
+        ALUSrc_A = 0;
+        ALUSrc_B = 1;
+        MemtoReg = 3'b011;
+        Jump = 2'b00;
+        Branch = 4'b0000;
+        RegWrite = 1;
+        MemRW = 0;
+        ALU_op = 2'b00;
+        CPU_MIO = 0;
+        signal = 0;
+        width = 2'b00;
+    end
+    `OPCODE_AUIPC: begin // auipc
+        ImmSel = 3'b100;
+        ALUSrc_A = 1;
+        ALUSrc_B = 1;
+        MemtoReg = 3'b100;
+        Jump = 2'b00;
+        Branch = 4'b0000;
+        RegWrite = 1;
+        MemRW = 0;
+        ALU_op = 2'b00;
+        CPU_MIO = 0;
+        signal = 0;
+        width = 2'b00;
     end
     default: begin
-        ImmSel = 2'b00;
+        ImmSel = 3'b000;
+        ALUSrc_A = 0;
         ALUSrc_B = 0;
-        MemtoReg = 2'b00;
-        Jump = 0;
-        Branch = 0;
+        MemtoReg = 3'b000;
+        Jump = 2'b00;
+        Branch = 4'b0000;
         RegWrite = 0;
         MemRW = 0;
         ALU_op = 2'b00;
         CPU_MIO = 0;
+        signal = 0;
+        width = 2'b00;
     end
     endcase
 end

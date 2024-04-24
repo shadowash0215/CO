@@ -59,17 +59,4 @@ set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 } [get_ports { BTN_y[
 set_property -dict { PACKAGE_PIN M17   IOSTANDARD LVCMOS33 } [get_ports { BTN_y[2] }]; 
 set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports { BTN_y[3] }]; 
 
-set_property -dict { PACKAGE_PIN A3    IOSTANDARD LVCMOS33 } [get_ports { Red[0] }]; 
-set_property -dict { PACKAGE_PIN B4    IOSTANDARD LVCMOS33 } [get_ports { Red[1] }]; 
-set_property -dict { PACKAGE_PIN C5    IOSTANDARD LVCMOS33 } [get_ports { Red[2] }]; 
-set_property -dict { PACKAGE_PIN A4    IOSTANDARD LVCMOS33 } [get_ports { Red[3] }]; 
-set_property -dict { PACKAGE_PIN C6    IOSTANDARD LVCMOS33 } [get_ports { Green[0] }]; 
-set_property -dict { PACKAGE_PIN A5    IOSTANDARD LVCMOS33 } [get_ports { Green[1] }]; 
-set_property -dict { PACKAGE_PIN B6    IOSTANDARD LVCMOS33 } [get_ports { Green[2] }]; 
-set_property -dict { PACKAGE_PIN A6    IOSTANDARD LVCMOS33 } [get_ports { Green[3] }]; 
-set_property -dict { PACKAGE_PIN B7    IOSTANDARD LVCMOS33 } [get_ports { Blue[0] }]; 
-set_property -dict { PACKAGE_PIN C7    IOSTANDARD LVCMOS33 } [get_ports { Blue[1] }]; 
-set_property -dict { PACKAGE_PIN D7    IOSTANDARD LVCMOS33 } [get_ports { Blue[2] }]; 
-set_property -dict { PACKAGE_PIN D8    IOSTANDARD LVCMOS33 } [get_ports { Blue[3] }]; 
-set_property -dict { PACKAGE_PIN B11   IOSTANDARD LVCMOS33 } [get_ports { HSYNC }]; 
-set_property -dict { PACKAGE_PIN B12   IOSTANDARD LVCMOS33 } [get_ports { VSYNC }]; 
+set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { tx }];
