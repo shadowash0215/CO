@@ -20,18 +20,28 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+`include "scpu_header.vh"
+
 module testbench_tb();
 
     reg clk;
     reg rst;
+    reg ext_int;
 
-    testbench m0(.clk(clk), .rst(rst));
+    testbench m0(.clk(clk), .rst(rst), .ext_int(ext_int));
 
     initial begin
+        ext_int = 1'b0;
         clk = 1'b0;
         rst = 1'b1;
         #5;
         rst = 1'b0;
+        #4495;
+        ext_int = 1'b1;
+        #100;
+        ext_int = 1'b0;
+        #1400;
+        $finish;
     end
 
     always #50 clk = ~clk;

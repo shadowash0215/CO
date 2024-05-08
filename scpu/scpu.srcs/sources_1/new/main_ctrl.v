@@ -25,6 +25,15 @@ module main_ctrl(
     input [4:0]       OPcode,
     input [2:0]       Fun3,
     input             Fun7,
+    input [11:0]      csr_raw,
+    output reg [11:0] csr_raddr,
+    output reg [11:0] csr_waddr,
+    output reg        illegal_inst,  // illegal instruction
+    output reg        ecall_inst, 
+    output reg        mret_inst,
+    output reg        csr_we, // 1 for enable writing to CSR, 0 for disable
+    output reg [1:0]  csr_wsc_mode, // 01 for w, 10 for s, 11 for c
+    output reg        csr_src, // 0 for rs1, 1 for Imm_res
     output reg [2:0]  ImmSel,
     output reg        ALUSrc_A,   
     output reg        ALUSrc_B,
@@ -60,6 +69,12 @@ always @(*) begin
             signal = 0;
         end
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     // I-type
     `OPCODE_ALU_IMM: begin // addi, andi, ori, xori, slti, sltiu, slli, srli, srai
@@ -79,6 +94,12 @@ always @(*) begin
             signal = 0;
         end
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     `OPCODE_LOAD: begin // lb, lh, lw, lbu, lhu
         ImmSel = 3'b000;
@@ -93,6 +114,12 @@ always @(*) begin
         CPU_MIO = 1;
         signal = Fun3[2];
         width = Fun3[1:0];
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     `OPCODE_JALR: begin // jalr
         ImmSel = 3'b000;
@@ -107,6 +134,12 @@ always @(*) begin
         CPU_MIO = 0;
         signal = 0;
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     // S-type
     `OPCODE_STORE: begin // sb, sh, sw
@@ -122,6 +155,12 @@ always @(*) begin
         CPU_MIO = 1;
         signal = 0;
         width = Fun3[1:0];
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     // SB-type
     `OPCODE_BRANCH: begin // beq, bne, blt, bge, bltu, bgeu
@@ -165,6 +204,12 @@ always @(*) begin
         ALU_op = 2'b01;
         CPU_MIO = 0;
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     // UJ-type
     `OPCODE_JAL: begin // jal
@@ -180,6 +225,12 @@ always @(*) begin
         CPU_MIO = 0;
         signal = 0;
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     // U-type
     `OPCODE_LUI: begin // lui
@@ -195,6 +246,12 @@ always @(*) begin
         CPU_MIO = 0;
         signal = 0;
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
     end
     `OPCODE_AUIPC: begin // auipc
         ImmSel = 3'b100;
@@ -209,6 +266,186 @@ always @(*) begin
         CPU_MIO = 0;
         signal = 0;
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b0;
+    end
+    `OPCODE_ENV: begin // ecall, mret, Zicsr
+        ImmSel = 3'b000;
+        ALUSrc_A = 0;
+        ALUSrc_B = 0;
+        Jump = 2'b00;
+        Branch = 4'b0000;
+        MemRW = 0;
+        ALU_op = 2'b00;
+        CPU_MIO = 0;
+        signal = 0;
+        width = 2'b00;
+        case (Fun3) 
+            3'b000: begin
+                case (csr_raw)
+                    12'h000: begin // ecall
+                        csr_raddr = 12'h305;
+                        csr_waddr = 12'h305;
+                        csr_we = 0;
+                        csr_src = 0;
+                        csr_wsc_mode = 2'b00;
+                        {illegal_inst, ecall_inst, mret_inst} = 3'b010;
+                        MemtoReg = 3'b000;
+                        RegWrite = 0;
+                    end
+                    12'h302: begin // mret
+                        csr_raddr = 12'h341;
+                        csr_waddr = 12'h341;
+                        csr_we = 0;
+                        csr_src = 0;
+                        csr_wsc_mode = 2'b00;
+                        {illegal_inst, ecall_inst, mret_inst} = 3'b001;
+                        MemtoReg = 3'b000;
+                        RegWrite = 0;
+                    end
+                    default: begin // unimp
+                        csr_raddr = 12'h305;
+                        csr_waddr = 12'h305;
+                        csr_we = 0;
+                        csr_src = 0;
+                        csr_wsc_mode = 2'b00;
+                        {illegal_inst, ecall_inst, mret_inst} = 3'b100;
+                        MemtoReg = 3'b000;
+                        RegWrite = 0;
+                    end
+                endcase
+            end
+            3'b001: begin 
+                if (csr_raw != 12'h300 && csr_raw != 12'h341 && csr_raw != 12'h305 && csr_raw != 12'h342 && csr_raw != 12'h343) begin // unimp
+                    csr_raddr = 12'h305;
+                    csr_waddr = 12'h305;
+                    csr_we = 0;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b00;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b100;
+                    MemtoReg = 3'b000;
+                    RegWrite = 0;
+                end else begin // csrrw
+                    csr_raddr = csr_raw;
+                    csr_waddr = csr_raw;
+                    csr_we = 1;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b01;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b0;
+                    MemtoReg = 3'b101;
+                    RegWrite = 1;
+                end
+            end
+            3'b010: begin 
+                if (csr_raw != 12'h300 && csr_raw != 12'h341 && csr_raw != 12'h305 && csr_raw != 12'h342 && csr_raw != 12'h343) begin // unimp
+                    csr_raddr = 12'h305;
+                    csr_waddr = 12'h305;
+                    csr_we = 0;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b00;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b100;
+                    MemtoReg = 3'b000;
+                    RegWrite = 0;
+                end else begin // csrrs
+                    csr_raddr = csr_raw;
+                    csr_waddr = csr_raw;
+                    csr_we = 1;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b10;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b0;
+                    MemtoReg = 3'b101;
+                    RegWrite = 1;
+                end
+            end
+            3'b011: begin 
+                if (csr_raw != 12'h300 && csr_raw != 12'h341 && csr_raw != 12'h305 && csr_raw != 12'h342 && csr_raw != 12'h343) begin // unimp
+                    csr_raddr = 12'h305;
+                    csr_waddr = 12'h305;
+                    csr_we = 0;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b00;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b100;
+                    MemtoReg = 3'b000;
+                    RegWrite = 0;
+                end else begin // csrrc
+                    csr_raddr = csr_raw;
+                    csr_waddr = csr_raw;
+                    csr_we = 1;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b11;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b0;
+                    MemtoReg = 3'b101;
+                    RegWrite = 1;
+                end
+            end
+            3'b101: begin 
+                if (csr_raw != 12'h300 && csr_raw != 12'h341 && csr_raw != 12'h305 && csr_raw != 12'h342 && csr_raw != 12'h343) begin // unimp
+                    csr_raddr = 12'h305;
+                    csr_waddr = 12'h305;
+                    csr_we = 0;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b00;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b100;
+                    MemtoReg = 3'b000;
+                    RegWrite = 0;
+                end else begin // csrrwi
+                    csr_raddr = csr_raw;
+                    csr_waddr = csr_raw;
+                    csr_we = 1;
+                    csr_src = 1;
+                    csr_wsc_mode = 2'b01;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b0;
+                    MemtoReg = 3'b101;
+                    RegWrite = 1;
+                end
+            end
+            3'b110: begin 
+                if (csr_raw != 12'h300 && csr_raw != 12'h341 && csr_raw != 12'h305 && csr_raw != 12'h342 && csr_raw != 12'h343) begin // unimp
+                    csr_raddr = 12'h305;
+                    csr_waddr = 12'h305;
+                    csr_we = 0;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b00;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b100;
+                    MemtoReg = 3'b000;
+                    RegWrite = 0;
+                end else begin // csrrsi
+                    csr_raddr = csr_raw;
+                    csr_waddr = csr_raw;
+                    csr_we = 1;
+                    csr_src = 1;
+                    csr_wsc_mode = 2'b10;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b0;
+                    MemtoReg = 3'b101;
+                    RegWrite = 1;
+                end
+            end
+            3'b111: begin 
+                if (csr_raw != 12'h300 && csr_raw != 12'h341 && csr_raw != 12'h305 && csr_raw != 12'h342 && csr_raw != 12'h343) begin // unimp
+                    csr_raddr = 12'h305;
+                    csr_waddr = 12'h305;
+                    csr_we = 0;
+                    csr_src = 0;
+                    csr_wsc_mode = 2'b00;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b100;
+                    MemtoReg = 3'b000;
+                    RegWrite = 0;
+                end else begin // csrrci
+                    csr_raddr = csr_raw;
+                    csr_waddr = csr_raw;
+                    csr_we = 1;
+                    csr_src = 1;
+                    csr_wsc_mode = 2'b11;
+                    {illegal_inst, ecall_inst, mret_inst} = 3'b0;
+                    MemtoReg = 3'b101;
+                    RegWrite = 1;
+                end
+            end
+        endcase
     end
     default: begin
         ImmSel = 3'b000;
@@ -223,6 +460,12 @@ always @(*) begin
         CPU_MIO = 0;
         signal = 0;
         width = 2'b00;
+        csr_raddr = 12'h000;
+        csr_waddr = 12'h000;
+        csr_we = 0;
+        csr_src = 0;
+        csr_wsc_mode = 2'b00;
+        {illegal_inst, ecall_inst, mret_inst} = 3'b100;
     end
     endcase
 end

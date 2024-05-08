@@ -91,6 +91,7 @@
 `define MEM2REG_PC_PLUS     `MEM2REG_WIDTH'd2
 `define MEM2REG_LUI         `MEM2REG_WIDTH'd3
 `define MEM2REG_AUIPC       `MEM2REG_WIDTH'd4
+`define MEM2REG_CSR         `MEM2REG_WIDTH'd5
 /*-----------------------------------*/
 
 /*AddressSel signals */
@@ -412,3 +413,24 @@
     output [31:0] dmem_o_data, \
     output [31:0] dmem_i_data, \
     output [31:0] dmem_addr,
+
+`define CSR_Regs_Outputs \
+    output reg [31:0] mstatus, \
+    output reg [31:0] mtvec, \
+    output reg [31:0] mepc, \
+    output reg [31:0] mcause, \
+    output reg [31:0] mtval,
+
+`define CSR_Regs_Arguments \
+    .mstatus(mstatus), \
+    .mtvec(mtvec), \
+    .mepc(mepc), \
+    .mcause(mcause), \
+    .mtval(mtval),
+
+`define CSR_Regs_Declaration \
+    wire [31:0] mstatus; \
+    wire [31:0] mtvec; \
+    wire [31:0] mepc; \
+    wire [31:0] mcause; \
+    wire [31:0] mtval;

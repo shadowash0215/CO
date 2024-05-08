@@ -28,16 +28,22 @@ module datapath(
     input [31:0] data_in,
     input [3:0] ALU_Control, 
     input [2:0] ImmSel, // Immediate type
-    input [2:0] MemtoReg, // Memory to register signal, 000 for ALU result, 001 for data_in, 010 for PC + 4, 011 for Imm_out(lui), 100 for PC + Imm_out(auipc)
+    input [2:0] MemtoReg, // Memory to register signal, 000 for ALU result, 001 for data_in, 010 for PC + 4, 011 for Imm_out(lui), 100 for PC + Imm_out(auipc), 101 for csr_src
     input [3:0] Branch, // Branch signal
     input [1:0] Jump, // Jump signal, 10 for jal, 11 for jalr, 0x for others
     input ALUSrc_A, // the source of the first operand of ALU, 0 for register file, 1 for PC
     input ALUSrc_B, // the source of the second operand of ALU, 0 for register file, 1 for immediate
+    input csr_src, // the source of the data to be written to CSR, 0 fir rs1_data, 1 for Imm(zero-extended)
+    input en, // Write enable signal
+    input PC_csr, // the source of the address of the next instruction, 1 for PC_trap, 0 for others
+    input [31:0] PC_trap, // the address of the next instruction when trap happens
+    input [31:0] csr_rdata, // the data read from CSR
     input RegWrite, // Register write signal
     input signal, // ALU control signal for load/store instructions, 1 for unsigned, 0 for signed
     input [1:0] width, // the width of the data to be loaded/stored, 00 for 8-bit, 01 for 16-bit, 10 for 32-bit
     
     `RegFile_Regs_Outputs
+    output     [31:0] csr_wdata,
     output reg [3:0]  RAM_mask,
     output reg [31:0] Data_out,
     output reg [31:0] ALU_out,
@@ -65,15 +71,16 @@ assign rs2 = inst_field[24:20];
 assign ALUSrc_B_Imm = Imm_out;
 assign A = ALUSrc_A ? PC_res : ALUSrc_A_Reg;
 assign B = ALUSrc_B ? ALUSrc_B_Imm : ALUSrc_B_Reg;
+assign csr_wdata = csr_src ? {27'b0, rs1} : ALUSrc_A_Reg;
 
 // decide the address of the next instruction
 assign Branch_temp = (Branch[0] & zero) | (Branch[1] & ~zero) | (Branch[2] & ALU_res[0]) | (Branch[3] & ~ALU_res[0]);
 
-assign PC_in = Jump[1] ? (Jump[0] ? ALU_res : Imm_out + PC_res) : (Branch_temp ? (Imm_out + PC_res) : (PC_res + 4));
+assign PC_in = PC_csr ? PC_trap : (Jump[1] ? (Jump[0] ? ALU_res : Imm_out + PC_res) : (Branch_temp ? (Imm_out + PC_res) : (PC_res + 4)));
 
 ImmGen U1(.inst_field(inst_field), .ImmSel(ImmSel), .Imm_out(Imm_out));
 
-Regs U2(.clk(clk), .rst(rst), .Rs1_addr(rs1), .Rs2_addr(rs2), .Wt_addr(rd), .Wt_data(Wt_data), .RegWrite(RegWrite), 
+Regs U2(.clk(clk), .rst(rst), .Rs1_addr(rs1), .Rs2_addr(rs2), .Wt_addr(rd), .Wt_data(Wt_data), .RegWrite(RegWrite & en), 
 
 `RegFile_Regs_Arguments
 .Rs1_data(ALUSrc_A_Reg), .Rs2_data(ALUSrc_B_Reg)
@@ -167,6 +174,8 @@ always @ (*) begin
         `MEM2REG_LUI: Wt_data = Imm_out;
         // auipc
         `MEM2REG_AUIPC: Wt_data = PC_res + Imm_out;
+        // csr
+        `MEM2REG_CSR: Wt_data = csr_rdata;
         default: Wt_data = 32'b0;
     endcase
 end
