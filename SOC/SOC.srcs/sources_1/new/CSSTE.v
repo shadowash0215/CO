@@ -33,6 +33,7 @@ module CSSTE(
     );
 
     `RegFile_Regs_Declaration
+    `STATE_Regs_Declaration
 
     wire [ 3:0] BTN;
     wire [15:0] switch;
@@ -111,11 +112,12 @@ module CSSTE(
     );
 
     wire [ 3:0] RAM_mask;
+    wire [31:0] Wt_data;
     wire [31:0] data_out;
     wire [31:0] addr_out;
     wire [31:0] PC_out;
     wire        MemRW;
-    scpu U1(
+    SCPU U1(
         .clk(clk_cpu),
         .rst(rst),
         .Data_in(data_in),
@@ -123,7 +125,9 @@ module CSSTE(
         .MemRW(MemRW),
 
         `RegFile_Regs_Arguments
+        `STATE_Regs_Arguments
         .RAM_mask(RAM_mask),
+        .Wt_data(Wt_data),
         .Addr_out(addr_out),
         .Data_out(data_out),
         .PC_out(PC_out)
@@ -190,17 +194,9 @@ module CSSTE(
     UART U11(
         .clk(clk_100mhz),
         .rst(SW[0]),
-        .tx(tx),
-
         `URAT_RegFile_Arguments
-        .pc(PC_out),
-        .inst(inst_in),
-        .alu_res(addr_out),
-        .mem_wen(MemRW),
-        .mem_ren(~MemRW),
-        .dmem_o_data(ram_data_out),
-        .dmem_i_data(data_in),
-        .dmem_addr(addr_out)
+        `URAT_Debug_Signals_Arguments
+        .tx(tx)
     );
 
 endmodule
