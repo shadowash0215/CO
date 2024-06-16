@@ -21,7 +21,7 @@
 
 
 module SCPU_ctrl(
-  input [4:0]       OPcode, 
+  input [6:0]       OPcode, 
   input [2:0]       Fun3,
   input             Fun7,
   input             MIO_ready,
@@ -30,9 +30,10 @@ module SCPU_ctrl(
   output        ALUSrc_B,
   output  [2:0]  MemtoReg,
   output  [1:0]  Jump,
-  output  [3:0]  Branch,
+  output  [2:0]  Branch,
   output         RegWrite,
-  output         MemRW,
+  output         MemWrite,
+  output         MemRead,
   output  [3:0]  ALU_Control,
   output         CPU_MIO,
   output         sign,
@@ -41,7 +42,7 @@ module SCPU_ctrl(
 
 wire [1:0] ALU_op;
 
-main_ctrl U1(.OPcode(OPcode), .Fun3(Fun3), .Fun7(Fun7), .ImmSel(ImmSel), .ALUSrc_A(ALUSrc_A), .ALUSrc_B(ALUSrc_B), .MemtoReg(MemtoReg), .Jump(Jump), .Branch(Branch), .sign(sign), .width(width), .RegWrite(RegWrite), .MemRW(MemRW), .ALU_op(ALU_op), .CPU_MIO(CPU_MIO));
+main_ctrl U1(.OPcode(OPcode), .Fun3(Fun3), .Fun7(Fun7), .ImmSel(ImmSel), .ALUSrc_A(ALUSrc_A), .ALUSrc_B(ALUSrc_B), .MemtoReg(MemtoReg), .Jump(Jump), .Branch(Branch), .sign(sign), .width(width), .RegWrite(RegWrite), .MemWrite(MemWrite), .MemRead(MemRead), .ALU_op(ALU_op), .CPU_MIO(CPU_MIO));
 
 ALU_ctrl U2(.ALU_op(ALU_op), .Fun3(Fun3), .Fun7(Fun7), .ALU_Control(ALU_Control));
 

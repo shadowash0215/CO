@@ -122,7 +122,7 @@ module CSSTE(
         .rst(rst),
         .Data_in(data_in),
         .inst_in(inst_in),
-        .MemRW(MemRW),
+        .MemWrite(MemRW),
 
         `RegFile_Regs_Arguments
         `STATE_Regs_Arguments

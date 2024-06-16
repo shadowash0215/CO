@@ -23,23 +23,23 @@
 /*-----------------------------------*/
 
 /* Inst decoding(Using in Lab4/5) */
-/* Opcode(5-bits) */
+/* Opcode(-bits) */
 // R-Type
-`define OPCODE_ALU      5'b01100
+`define OPCODE_ALU      7'b0110011
 // I-Type
-`define OPCODE_ALU_IMM  5'b00100
-`define OPCODE_LOAD     5'b00000
-`define OPCODE_JALR     5'b11001
-`define OPCODE_ENV      5'b11100
+`define OPCODE_ALU_IMM  7'b0010011
+`define OPCODE_LOAD     7'b0000011
+`define OPCODE_JALR     7'b1100111
+`define OPCODE_ENV      7'b1110011
 // S-Type
-`define OPCODE_STORE    5'b01000
+`define OPCODE_STORE    7'b0100011
 // B-Type
-`define OPCODE_BRANCH   5'b11000
+`define OPCODE_BRANCH   7'b1100011
 // J-Type
-`define OPCODE_JAL      5'b11011
+`define OPCODE_JAL      7'b1101111
 // U-Type
-`define OPCODE_LUI      5'b01101
-`define OPCODE_AUIPC    5'b00101
+`define OPCODE_LUI      7'b0110111
+`define OPCODE_AUIPC    7'b0010111
 
 /* Func3(3-bits) */
 // R-Type & I-Type(ALU)
@@ -359,22 +359,22 @@
     .rs1_val(ID_EX_rs1_data), \
     .rs2_val(ID_EX_rs2_data), \
     .imm(ID_EX_imm_data), \
-    .mem_wen_ex(ID_EX_MemRW), \
-    .mem_ren_ex(~ID_EX_MemRW), \
-    .is_branch(ID_EX_Branch[3] | ID_EX_Branch[2] | ID_EX_Branch[1] | ID_EX_Branch[0]), \
+    .mem_wen_ex(ID_EX_MemWrite), \
+    .mem_ren_ex(ID_EX_MemRead), \
+    .is_branch(ID_EX_Branch[2]), \
     .is_jal_ex(ID_EX_Jump[1] & ~ID_EX_Jump[0]), \
     .is_jalr_ex(ID_EX_Jump[1] & ID_EX_Jump[0]), \
     .reg_wen_ex(ID_EX_RegWrite), \
     .pc_mem(EX_MEM_PC), \
-    .rd_mem(EX_MEM_Wt_addr), \
+    .rd_mem(EX_MEM_rd), \
     .reg_wen_mem(EX_MEM_RegWrite), \
     .mem_w_data(Data_out), \
-    .mem_wen_mem(EX_MEM_MemRW), \
-    .mem_ren_mem(~EX_MEM_MemRW), \
+    .mem_wen_mem(EX_MEM_MemWrite), \
+    .mem_ren_mem(EX_MEM_MemRead), \
     .is_jal_mem(EX_MEM_Jump[1] & ~EX_MEM_Jump[0]), \
     .is_jalr_mem(EX_MEM_Jump[1] & EX_MEM_Jump[0]), \
     .pc_wb(MEM_WB_PC), \
-    .rd_wb(MEM_WB_Wt_addr), \
+    .rd_wb(MEM_WB_rd), \
     .reg_wen_wb(MEM_WB_RegWrite), \
     .reg_w_data(Wt_data), \
 
@@ -416,35 +416,37 @@
     output reg [31:0] ID_EX_rs1_data, \
     output reg [31:0] ID_EX_rs2_data, \
     output reg [31:0] ID_EX_imm_data, \
-    output reg  [4:0]  ID_EX_Wt_addr, \
+    output reg  [4:0]  ID_EX_rs1, \
+    output reg  [4:0]  ID_EX_rs2, \
+    output reg  [4:0]  ID_EX_rd, \
     output reg  [3:0]  ID_EX_ALU_Control, \
-    output reg  [3:0]  ID_EX_Branch, \
+    output reg  [2:0]  ID_EX_Branch, \
     output reg  [2:0]  ID_EX_MemtoReg, \
     output reg  [1:0]  ID_EX_Jump, \
     output reg  [1:0]  ID_EX_width, \
     output reg         ID_EX_ALUSrc_A, \
     output reg         ID_EX_ALUSrc_B, \
     output reg         ID_EX_RegWrite, \
-    output reg         ID_EX_MemRW, \
+    output reg         ID_EX_MemWrite, \
+    output reg         ID_EX_MemRead, \
     output reg         ID_EX_sign, \
     output reg  [31:0] EX_MEM_PC, \
     output reg  [31:0] EX_MEM_ALU_out, \
     output reg  [31:0] EX_MEM_rs2_data, \
     output reg  [31:0] EX_MEM_imm_data, \
-    output reg  [4:0]  EX_MEM_Wt_addr, \
-    output reg  [3:0]  EX_MEM_Branch, \
+    output reg  [4:0]  EX_MEM_rd, \
     output reg  [2:0]  EX_MEM_MemtoReg, \
     output reg  [1:0]  EX_MEM_Jump, \
     output reg  [1:0]  EX_MEM_width, \
     output reg         EX_MEM_RegWrite, \
-    output reg         EX_MEM_MemRW, \
+    output reg         EX_MEM_MemWrite, \
     output reg         EX_MEM_sign, \
     output reg         EX_MEM_ALU_zero, \
     output reg  [31:0] MEM_WB_PC, \
     output reg  [31:0] MEM_WB_ALU_out, \
     output reg  [31:0] MEM_WB_imm_data, \
     output reg  [31:0] MEM_WB_Data_in, \
-    output reg  [4:0]  MEM_WB_Wt_addr, \
+    output reg  [4:0]  MEM_WB_rd, \
     output reg  [3:0]  MEM_WB_MemtoReg, \
     output reg  [1:0]  MEM_WB_width, \
     output reg         MEM_WB_sign, \
@@ -457,35 +459,34 @@
     wire [31:0] ID_EX_rs1_data; \
     wire [31:0] ID_EX_rs2_data; \
     wire [31:0] ID_EX_imm_data; \
-    wire  [4:0]  ID_EX_Wt_addr; \
+    wire  [4:0]  ID_EX_rd; \
     wire  [3:0]  ID_EX_ALU_Control; \
-    wire  [3:0]  ID_EX_Branch; \
+    wire  [2:0]  ID_EX_Branch; \
     wire  [2:0]  ID_EX_MemtoReg; \
     wire  [1:0]  ID_EX_Jump; \
     wire  [1:0]  ID_EX_width; \
     wire         ID_EX_ALUSrc_A; \
     wire         ID_EX_ALUSrc_B; \
     wire         ID_EX_RegWrite; \
-    wire         ID_EX_MemRW; \
+    wire         ID_EX_MemWrite; \
     wire         ID_EX_sign; \
     wire  [31:0] EX_MEM_PC; \
     wire  [31:0] EX_MEM_ALU_out; \
     wire  [31:0] EX_MEM_rs2_data; \
     wire  [31:0] EX_MEM_imm_data; \
-    wire  [4:0]  EX_MEM_Wt_addr; \
-    wire  [3:0]  EX_MEM_Branch; \
+    wire  [4:0]  EX_MEM_rd; \
     wire  [2:0]  EX_MEM_MemtoReg; \
     wire  [1:0]  EX_MEM_Jump; \
     wire  [1:0]  EX_MEM_width; \
     wire         EX_MEM_RegWrite; \
-    wire         EX_MEM_MemRW; \
+    wire         EX_MEM_MemWrite; \
     wire         EX_MEM_sign; \
     wire         EX_MEM_ALU_zero; \
     wire  [31:0] MEM_WB_PC; \
     wire  [31:0] MEM_WB_ALU_out; \
     wire  [31:0] MEM_WB_imm_data; \
     wire  [31:0] MEM_WB_Data_in; \
-    wire  [4:0]  MEM_WB_Wt_addr; \
+    wire  [4:0]  MEM_WB_rd; \
     wire  [3:0]  MEM_WB_MemtoReg; \
     wire  [1:0]  MEM_WB_width; \
     wire         MEM_WB_sign; \
@@ -498,7 +499,7 @@
     .ID_EX_rs1_data(ID_EX_rs1_data), \
     .ID_EX_rs2_data(ID_EX_rs2_data), \
     .ID_EX_imm_data(ID_EX_imm_data), \
-    .ID_EX_Wt_addr(ID_EX_Wt_addr), \
+    .ID_EX_rd(ID_EX_rd), \
     .ID_EX_ALU_Control(ID_EX_ALU_Control), \
     .ID_EX_Branch(ID_EX_Branch), \
     .ID_EX_MemtoReg(ID_EX_MemtoReg), \
@@ -507,26 +508,25 @@
     .ID_EX_ALUSrc_A(ID_EX_ALUSrc_A), \
     .ID_EX_ALUSrc_B(ID_EX_ALUSrc_B), \
     .ID_EX_RegWrite(ID_EX_RegWrite), \
-    .ID_EX_MemRW(ID_EX_MemRW), \
+    .ID_EX_MemWrite(ID_EX_MemWrite), \
     .ID_EX_sign(ID_EX_sign), \
     .EX_MEM_PC(EX_MEM_PC), \
     .EX_MEM_ALU_out(EX_MEM_ALU_out), \
     .EX_MEM_rs2_data(EX_MEM_rs2_data), \
     .EX_MEM_imm_data(EX_MEM_imm_data), \
-    .EX_MEM_Wt_addr(EX_MEM_Wt_addr), \
-    .EX_MEM_Branch(EX_MEM_Branch), \
+    .EX_MEM_rd(EX_MEM_rd), \
     .EX_MEM_MemtoReg(EX_MEM_MemtoReg), \
     .EX_MEM_Jump(EX_MEM_Jump), \
     .EX_MEM_width(EX_MEM_width), \
     .EX_MEM_RegWrite(EX_MEM_RegWrite), \
-    .EX_MEM_MemRW(EX_MEM_MemRW), \
+    .EX_MEM_MemWrite(EX_MEM_MemWrite), \
     .EX_MEM_sign(EX_MEM_sign), \
     .EX_MEM_ALU_zero(EX_MEM_ALU_zero), \
     .MEM_WB_PC(MEM_WB_PC), \
     .MEM_WB_ALU_out(MEM_WB_ALU_out), \
     .MEM_WB_imm_data(MEM_WB_imm_data), \
     .MEM_WB_Data_in(MEM_WB_Data_in), \
-    .MEM_WB_Wt_addr(MEM_WB_Wt_addr), \
+    .MEM_WB_rd(MEM_WB_rd), \
     .MEM_WB_MemtoReg(MEM_WB_MemtoReg), \
     .MEM_WB_width(MEM_WB_width), \
     .MEM_WB_sign(MEM_WB_sign), \

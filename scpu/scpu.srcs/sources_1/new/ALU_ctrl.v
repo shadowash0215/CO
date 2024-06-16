@@ -34,8 +34,8 @@ always @(*) begin
     // SB-type
     2'b01: begin
         case(Fun3) 
-        `FUNC_EQ: ALU_Control = `ALU_OP_SUB; // sub
-        `FUNC_NE: ALU_Control = `ALU_OP_SUB; // sub
+        `FUNC_EQ: ALU_Control = `ALU_OP_XOR; // xor
+        `FUNC_NE: ALU_Control = `ALU_OP_XOR; // xor
         `FUNC_LT: ALU_Control = `ALU_OP_SLT; // slt
         `FUNC_GE: ALU_Control = `ALU_OP_SLT; // slt
         `FUNC_LTU: ALU_Control = `ALU_OP_SLTU; // sltu

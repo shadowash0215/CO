@@ -42,7 +42,7 @@ module Regs(
     assign Rs1_data = temp[Rs1_addr];
     assign Rs2_data = temp[Rs2_addr];
 
-    always @(posedge clk or posedge rst) begin
+    always @(negedge clk or posedge rst) begin
         if (rst) begin
             temp [0] <= 32'b0;
             temp [1] <= 32'b0;

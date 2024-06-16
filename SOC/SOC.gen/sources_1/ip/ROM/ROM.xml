@@ -16,7 +16,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sat May 25 07:13:25 UTC 2024</spirit:value>
+            <spirit:value>Mon Jun 10 11:48:56 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
@@ -31,7 +31,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:af99a08b</spirit:value>
+            <spirit:value>9:3ef90942</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -47,11 +47,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sat May 25 07:12:05 UTC 2024</spirit:value>
+            <spirit:value>Mon Jun 10 11:48:54 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:a13bb1de</spirit:value>
+            <spirit:value>9:dd4c30f7</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -66,11 +66,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sat May 25 07:12:05 UTC 2024</spirit:value>
+            <spirit:value>Mon Jun 10 11:48:54 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:af99a08b</spirit:value>
+            <spirit:value>9:3ef90942</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -86,11 +86,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sat May 25 07:12:05 UTC 2024</spirit:value>
+            <spirit:value>Mon Jun 10 11:48:54 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:a13bb1de</spirit:value>
+            <spirit:value>9:dd4c30f7</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -104,11 +104,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sat May 25 07:12:05 UTC 2024</spirit:value>
+            <spirit:value>Mon Jun 10 11:48:54 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:af99a08b</spirit:value>
+            <spirit:value>9:3ef90942</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -124,11 +124,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sat May 25 07:12:05 UTC 2024</spirit:value>
+            <spirit:value>Mon Jun 10 11:48:54 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:af99a08b</spirit:value>
+            <spirit:value>9:3ef90942</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -144,11 +144,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sat May 25 07:12:05 UTC 2024</spirit:value>
+            <spirit:value>Mon Jun 10 11:48:54 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:af99a08b</spirit:value>
+            <spirit:value>9:3ef90942</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -919,7 +919,7 @@
     <spirit:parameter>
       <spirit:name>coefficient_file</spirit:name>
       <spirit:displayName>Coefficients File</spirit:displayName>
-      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.coefficient_file" spirit:order="18">../../../../../IP2SOC/I_mem_3.coe</spirit:value>
+      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.coefficient_file" spirit:order="18">../../../../../IP2SOC/I_mem_2.coe</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>default_data_radix</spirit:name>
